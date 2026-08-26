@@ -1,24 +1,37 @@
 from total_todo_dto import TodoRequest, TodoResponse
 from infra.priority_db import User, Task, SubTask
+from todos.ai.divide_ai import divide_and_submit
 from sqlalchemy.orm import Session
 
 class TotalTodoService:
     def insert_todo(self, todo_insert_dto:TodoRequest, db:Session):
-        new_todo = Task(
-            title=todo_insert_dto.title,
-            deadline=todo_insert_dto.due_date
+        result, subtasks = divide_and_submit(todo_insert_dto)
+        new_task = Task(
+            title=result["task_name"],
+            deadline=result["deadline"],
+            status="pending",
+            total_estimated=result["total_estimated"],
+            is_fixed=False
         )
-        db.add(new_todo)
+        db.add(new_task)
         db.commit()
-        db.refresh(new_todo)
-        response = TodoResponse(id=new_todo.id, title=new_todo.title, due_date=new_todo.due_date)
-        subtasks = self.divide_todo(new_todo.id, db)
-        result = {
-            "message": "Todo item inserted successfully.",
-            "todo": response,
-            "subtasks": subtasks
-        }
-        return result
+        db.refresh(new_task)
+
+        for subtask in subtasks:
+            new_subtask = SubTask(
+                task_id=new_task.task_id,
+                subtask_title=subtask["subtask_title"],
+                ratio=subtask["ratio"],
+                urgent=subtask["urgent"],
+                importance=subtask["importance"],
+                order=subtask["order"],
+                scheduled_date=subtask.get("scheduled_date"),
+                estimated_time=subtask.get("estimated_time"),
+                complete=False
+            )
+            db.add(new_subtask)
+        db.commit()
+        return {"message": "Todo item inserted successfully.", "task_id": new_task.task_id, "subtasks": subtasks}
     
     def delete_todo(self, todo_id: int, db:Session):
         # 삭제할 Todo 항목을 조회
@@ -52,8 +65,6 @@ class TotalTodoService:
         else:
             return {"message": f"Todo item with id {todo_id} not found."}
 
-    def divide_todo(self, todo_id: int, db: Session):
-        todo = db.query(TodoRequest).filter(TodoRequest.id == todo_id).first()
-        sub_todos = []
-        # AI를 통해 todo를 여러 개의 subtask로 나누는 로직 구현 예정
-        return sub_todos
+    def divide_todo(self, todo_dto: TodoRequest, db: Session):
+        result = divide_and_submit(todo_dto)
+        return result, result["subtasks"]
