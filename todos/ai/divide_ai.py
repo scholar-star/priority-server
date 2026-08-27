@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import datetime
@@ -15,7 +16,7 @@ with open("todos/ai/prompt.md", "r", encoding="utf-8") as f:
 
 user_todo = TodoRequest(title="최종 기획안 작성", due_date="2026-09-01", due_time=None)
 
-def divide_and_submit(user_todo: TodoRequest):
+async def divide_and_submit(user_todo: TodoRequest):
     current_date = datetime.datetime.now().date()
     current_time = datetime.datetime.now().time()
 
@@ -23,12 +24,10 @@ def divide_and_submit(user_todo: TodoRequest):
 
     final_prompt = prompt.replace("{{CURRENT_DATE}}", str(current_date)).replace("{{CURRENT_TIME}}", str(current_time))
 
-    interaction = client.interactions.create(
+    response = await client.interactions.create(
         model="gemini-3.5-flash",
         system_instruction=final_prompt,
         input=user_todo.model_dump_json()
     )
 
-    return interaction.output_text.json_loads() # JSON 문자열을 Python 객체로 변환
-
-print(divide_and_submit(user_todo))
+    return json.loads(response.output_text)
