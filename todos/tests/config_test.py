@@ -1,6 +1,6 @@
 import pytest
-import asyncio
 
+import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy import StaticPool
 from sqlalchemy.orm import sessionmaker
@@ -20,9 +20,10 @@ test_session = sessionmaker(
 
 pytestmark = pytest.mark.asyncio
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest_asyncio.fixture(scope="function", autouse=True)
 async def setup_database():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)  # 모든 테이블 생성
-    yield  # 테스트 실행
-    # 인메모리 DB - 테스트 후 테이블 삭제
+
+    async with test_session() as session:
+        yield session  # 테스트 함수에 세션 제공

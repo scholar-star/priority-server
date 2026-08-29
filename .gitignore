@@ -4,3 +4,5 @@
 
 /infra/__pycache__/
 /__pycache__/
+/todos/ai/__pycache__/
+/todos/tests/__pycache__/

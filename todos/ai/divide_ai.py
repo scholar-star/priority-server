@@ -1,11 +1,13 @@
 import json
 import os
+import re
 import sys
 import datetime
 
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
 from google import genai
+from google.genai import types
 from total_todo.total_todo_dto import TodoRequest
 from dotenv import load_dotenv
 
@@ -16,6 +18,20 @@ with open("todos/ai/prompt.md", "r", encoding="utf-8") as f:
 
 user_todo = TodoRequest(title="최종 기획안 작성", due_date="2026-09-01", due_time=None)
 
+async def clean_json_string(raw_text: str) -> str:
+    if not raw_text:
+        return "{}"
+    
+    text = raw_text.replace('\xa0', ' ').strip()
+    
+    # 중괄호로 감싸진 JSON 부분만 추출
+    match = re.search(r"\{[\s\S]*\}", text)
+    if match:
+        text = match.group(0)
+
+    # 양쪽 공백 제거
+    return text.strip()
+
 async def divide_and_submit(user_todo: TodoRequest):
     current_date = datetime.datetime.now().date()
     current_time = datetime.datetime.now().time()
@@ -24,10 +40,13 @@ async def divide_and_submit(user_todo: TodoRequest):
 
     final_prompt = prompt.replace("{{CURRENT_DATE}}", str(current_date)).replace("{{CURRENT_TIME}}", str(current_time))
 
-    response = await client.interactions.create(
+    response = await client.aio.interactions.create(
         model="gemini-3.5-flash",
         system_instruction=final_prompt,
-        input=user_todo.model_dump_json()
+        input=user_todo.model_dump_json(),
     )
 
-    return json.loads(response.output_text)
+    raw_text = response.output_text
+    cleaned_json = await clean_json_string(raw_text)
+    print(cleaned_json)
+    return json.loads(cleaned_json)

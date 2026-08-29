@@ -6,9 +6,9 @@ from total_todo_dto import TodoRequest
 
 router = APIRouter()
 
-@router.get("/todo/insert")
-async def insert_todo(todo: TodoRequest, db = Depends(get_db)):
-    return TotalTodoService().insert_todo(todo, db=Depends(get_db))
+@router.post("/todo/{user_id}/insert")
+async def insert_todo(user_id: int, todo: TodoRequest, db = Depends(get_db)):
+    return TotalTodoService().insert_todo(user_id, todo, db=Depends(get_db))
 
 # Todo 전체 삭제
 @router.delete("/todo/{id}/delete")

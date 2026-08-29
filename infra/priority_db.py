@@ -25,7 +25,7 @@ class Task(Base):
     deadline : Mapped[datetime] = mapped_column(DateTime, nullable=True)
     status : Mapped[str] = mapped_column(String(50), nullable=False)
     created_at : Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    total_estimated : Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    total_estimated : Mapped[int] = mapped_column(Integer, nullable=True)
     is_fixed : Mapped[bool] = mapped_column(Boolean, default=False)
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="tasks")
@@ -38,11 +38,11 @@ class SubTask(Base):
     task_id : Mapped[int] = mapped_column(Integer, ForeignKey("tasks.task_id"))
     subtask_title : Mapped[str] = mapped_column(String(200), nullable=False)
     ratio : Mapped[float] = mapped_column(String(50), nullable=False)
-    urgent : Mapped[bool] = mapped_column(Boolean, default=False)
+    urgent : Mapped[int] = mapped_column(Integer, default=3)
     importance : Mapped[int] = mapped_column(Integer, nullable=False)
     order : Mapped[int] = mapped_column(Integer, nullable=False)
-    scheduled_date : Mapped[date] = mapped_column(DateTime, nullable=True)
-    estimated_time : Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    scheduled_date : Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    estimated_time : Mapped[int] = mapped_column(Integer, nullable=True)
     complete : Mapped[bool] = mapped_column(Boolean, default=False)
     # Relationships
     task: Mapped["Task"] = relationship("Task", back_populates="subtasks")

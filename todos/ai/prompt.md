@@ -19,6 +19,7 @@
   "task_name": "최종 기획안 작성",
   "urgency": 4,
   "importance": 5,
+  "deadline":"2026-08-27",
   "total_estimated": 360,
   "subtasks": [
     {
