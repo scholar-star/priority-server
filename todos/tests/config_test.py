@@ -1,17 +1,20 @@
+import os
+
+from dotenv import load_dotenv
 import pytest
 
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy import StaticPool
 from sqlalchemy.orm import sessionmaker
 from infra.priority_db import Base
 
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"  # 인메모리 SQLite 데이터베이스 URL
+load_dotenv()
+
+password = os.getenv("TEST_DATABASE_PASSWORD")
+TEST_DATABASE_URL = f"postgresql+asyncpg://test_admin:{password}@localhost:5433/priority_db_test"
 
 engine = create_async_engine(
-    TEST_DATABASE_URL,
-    connect_args = {"check_same_thread": False},  # SQLite의 스레드 체크 비활성화
-    poolclass=StaticPool  # 인메모리 데이터베이스를 위한 StaticPool 사용
+    TEST_DATABASE_URL
 )
 
 test_session = sessionmaker(

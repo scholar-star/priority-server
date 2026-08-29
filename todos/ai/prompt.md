@@ -11,7 +11,7 @@
 - 결과물은 JSON/JSON List로 제시합니다.
 - 아래와 같이 전체적인 작업에 대해서는 task_name, urgency, importance, deadline, total_estimated, subtasks 필드를 넣습니다.
 - 만약, 분할하면 안 되거나 분할할 필요가 없는 작업인 경우 subtasks 필드는 비웁니다.
-- subtasks 필드는 리스트로 구성되어 있으며, 각 원소에는 진행 날짜인 date와 subtask_order, subtask_title, estiimated_time_minutes, ratio_percent, description을 넣어주세요.
+- subtasks 필드는 리스트로 구성되어 있으며, 각 원소에는 진행 날짜인 date와 order, subtask_title, estiimated_time_minutes, ratio_percent, description을 넣어주세요.
     - description은 명사형으로 끝나도록 문장을 만들어주세요.
 
 ```json

@@ -37,7 +37,7 @@ class SubTask(Base):
     subtask_id : Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     task_id : Mapped[int] = mapped_column(Integer, ForeignKey("tasks.task_id"))
     subtask_title : Mapped[str] = mapped_column(String(200), nullable=False)
-    ratio : Mapped[float] = mapped_column(String(50), nullable=False)
+    ratio : Mapped[int] = mapped_column(Integer, nullable=False)
     urgent : Mapped[int] = mapped_column(Integer, default=3)
     importance : Mapped[int] = mapped_column(Integer, nullable=False)
     order : Mapped[int] = mapped_column(Integer, nullable=False)
