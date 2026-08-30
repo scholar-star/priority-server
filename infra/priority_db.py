@@ -16,6 +16,12 @@ class User(Base):
     # Relationships
     tasks : Mapped[List["Task"]] = relationship("Task", back_populates="user", cascade="all, delete-orphan")
 
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
+    # Columns
+    user_id : Mapped[int] = mapped_column(Integer, ForeignKey("users.user_id"), primary_key=True)
+    token : Mapped[str] = mapped_column(String, nullable=False)
+
 class Task(Base):
     __tablename__ = "tasks"
     # Columns
