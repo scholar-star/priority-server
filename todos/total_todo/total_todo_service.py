@@ -1,3 +1,5 @@
+from sqlalchemy import select
+
 from .total_todo_dto import TodoRequest
 from infra.priority_db import Task, SubTask
 from todos.ai.divide_ai import divide_and_submit
@@ -38,11 +40,23 @@ class TotalTodoService:
         return {"message": "Todo item inserted successfully.", "task_id": new_task_id, "subtasks": subtasks}
 
     async def delete_todo(self, todo_id: int, db:AsyncSession):
+        todo_query = (
+            select(Task)
+            .where(Task.task_id == todo_id)
+        )
         # 삭제할 Todo 항목을 조회
-        todo = await db.execute(db.query(TodoRequest).filter(TodoRequest.id == todo_id).first())
+        todo = await db.execute(todo_query)
+        todo = todo.scalar_one_or_none()
         if todo:
             # Todo 항목과 관련된 SubTask 항목들을 먼저 삭제
-            await db.execute(db.query(SubTask).filter(SubTask.task_id == todo_id).delete()) # 외부 DB와 통신하는 과정 - await
+            subtasks_query = (
+                select(SubTask)
+                .where(SubTask.task_id == todo_id)
+            )
+            subtasks = await db.execute(subtasks_query)
+            subtasks = subtasks.scalars().all()
+            for subtask in subtasks:
+                await db.delete(subtask)
             await db.commit()
             # Todo 항목을 삭제
             await db.delete(todo)
