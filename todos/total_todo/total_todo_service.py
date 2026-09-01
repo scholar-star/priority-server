@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from .total_todo_dto import TodoRequest
 from infra.priority_db import Task, SubTask
@@ -66,22 +66,42 @@ class TotalTodoService:
             return {"message": f"Todo item with id {todo_id} not found."}
 
     async def update_todo(self, todo_id: int, todo_update_dto: TodoRequest, db: AsyncSession):
-        todo = await db.execute(db.query(TodoRequest).filter(TodoRequest.id == todo_id).first())
-        if todo:
-            if todo.due_date != todo_update_dto.due_date:
-                # 마감 일자가 변경될 경우, 기존의 subtask들을 삭제하고 새로운 subtask들을 재분할.
-                await db.execute(db.query(SubTask).filter(SubTask.task_id == todo_id).delete())
-                await db.commit()
-                subtasks = await self.divide_todo(todo_update_dto, db)
-            else:
-                # 마감 일자가 변경되지 않은 경우, 기존의 subtask들을 유지하고 업데이트된 todo 정보만 반영.
-                todo.title = todo_update_dto.title
-                todo.due_date = todo_update_dto.due_date
-                await db.commit()
-                await db.refresh(todo)
-            return {"message": f"Todo item with id {todo_id} updated successfully.", "subtasks": subtasks}
-        else:
-            return {"message": f"Todo item with id {todo_id} not found."}
+        todo_query = (
+            select(Task)
+            .where(Task.task_id == todo_id)
+        )
+
+        old_todo = await db.execute(todo_query)
+        old_todo = old_todo.scalar_one_or_none()
+        if todo_update_dto.title != old_todo.title:
+            old_todo.title = todo_update_dto.title
+        if todo_update_dto.due_date != old_todo.deadline or todo_update_dto.due_time != old_todo.due_time:
+            old_todo.deadline = datetime.datetime.strptime(todo_update_dto.due_date, "%Y-%m-%d")
+            subtasks_query = (
+                delete(SubTask)
+                .where(SubTask.task_id == todo_id)
+            )
+            subtasks = await db.execute(subtasks_query)
+            subtasks = subtasks.scalars().all()
+            db.execute(subtasks_query)
+            await db.commit()
+
+            divide_result, subtasks = await self.divide_todo(todo_update_dto, db)
+            for subtask in subtasks:
+                new_subtask = SubTask(
+                    task_id=todo_id,
+                    subtask_title=subtask["subtask_title"],
+                    ratio=subtask["ratio_percent"],
+                    urgent=divide_result["urgency"],
+                    importance=divide_result["importance"],
+                    order=subtask["order"],
+                    scheduled_date=datetime.datetime.strptime(subtask.get("date"), "%Y-%m-%d") if subtask.get("date") else None,
+                    estimated_time=subtask.get("estimated_time"),
+                    complete=False
+                )
+                db.add(new_subtask)
+        await db.commit()
+        return {"message": f"Todo item with id {todo_id} updated successfully."}
 
     async def divide_todo(self, todo_dto: TodoRequest, db: AsyncSession):
         result = await divide_and_submit(todo_dto)
