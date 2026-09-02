@@ -81,10 +81,7 @@ class TotalTodoService:
                 delete(SubTask)
                 .where(SubTask.task_id == todo_id)
             )
-            subtasks = await db.execute(subtasks_query)
-            subtasks = subtasks.scalars().all()
-            db.execute(subtasks_query)
-            await db.commit()
+            await db.execute(subtasks_query) # 삭제 쿼리를 실행하는 것이기 때문에, 삭제 이후의 데이터는 남아있지 않다. 
 
             divide_result, subtasks = await self.divide_todo(todo_update_dto, db)
             for subtask in subtasks:

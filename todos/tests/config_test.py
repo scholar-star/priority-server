@@ -30,3 +30,8 @@ async def setup_database():
 
     async with test_session() as session:
         yield session  # 테스트 함수에 세션 제공
+
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)  # 모든 테이블 삭제
+
+    await engine.dispose()  # 엔진 종료

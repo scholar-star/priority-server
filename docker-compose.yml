@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:17
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: priority_admin
+      POSTGRES_PASSWORD: ${PRIORITY_ADMIN_PASSWORD}
+      POSTGRES_DB: priority-db
+    volumes:
+      - 60aaf822fa873025f317b9b9b027c64e19a8624072d0fbbc75652732af256a39:/var/lib/postgresql/data
+
+volumes:
+  60aaf822fa873025f317b9b9b027c64e19a8624072d0fbbc75652732af256a39:
+    external: true
