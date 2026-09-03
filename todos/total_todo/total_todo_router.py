@@ -18,3 +18,7 @@ async def delete_todo(id: int, db = Depends(get_db)):
 @router.patch("/todo/{id}/update")
 async def update_todo(id: int, todo: TodoRequest, db = Depends(get_db)):
     return TotalTodoService().update_todo(id, todo, db)
+
+@router.patch("/todo/{id}/time-update")
+async def update_todo_time(id: int, todo: TodoRequest, db = Depends(get_db)):
+    return TotalTodoService().update_todo_time(id, todo, db)

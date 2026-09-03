@@ -97,6 +97,8 @@ class TotalTodoService:
                     complete=False
                 )
                 db.add(new_subtask)
+        if todo_update_dto.total_time != old_todo.total_estimated:
+            old_todo.total_estimated = todo_update_dto.total_time
         await db.commit()
         return {"message": f"Todo item with id {todo_id} updated successfully."}
 
