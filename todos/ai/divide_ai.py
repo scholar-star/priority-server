@@ -48,5 +48,4 @@ async def divide_and_submit(user_todo: TodoRequest):
 
     raw_text = response.output_text
     cleaned_json = await clean_json_string(raw_text)
-    print(cleaned_json)
     return json.loads(cleaned_json)

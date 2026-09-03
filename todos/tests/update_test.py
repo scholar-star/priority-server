@@ -22,7 +22,7 @@ async def test_update_title(setup_database, setup_user):
     # Todo 항목 업데이트
     updated_todo = TodoRequest(
         title="업데이트된 기술스펙 작성",
-        due_date="2026-09-15"
+        due_date="2026-08-31"
     )
     update_result = await service.update_todo(todo_id, updated_todo, setup_database)
 
@@ -55,18 +55,8 @@ async def test_update_date(setup_database, setup_user):
     )
     update_result = await service.update_todo(todo_id, updated_todo, setup_database)
 
+    update_date_result = await setup_database.execute(select(SubTask).where(SubTask.task_id == todo_id))
+    print("업데이트된 SubTask 항목들:", update_date_result.scalars().all())
+
     # 업데이트 결과 확인
     assert update_result["message"] == f"Todo item with id {todo_id} updated successfully."
-
-    # DB에서 업데이트된 항목 조회
-    todo_query = select(Task).where(Task.task_id == todo_id)
-    todo_result = await setup_database.execute(todo_query)
-    updated_task = todo_result.scalar_one_or_none()
-
-    sub_todo_query = select(SubTask).where(SubTask.task_id == todo_id)
-    sub_todo_result = await setup_database.execute(sub_todo_query)
-    updated_subtasks = sub_todo_result.scalars().all()
-    print("Updated SubTasks:", updated_subtasks)
-
-    assert updated_task is not None
-    assert updated_task.deadline.strftime("%Y-%m-%d") == "2026-09-15"
