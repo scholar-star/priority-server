@@ -16,6 +16,9 @@ load_dotenv()
 with open("todos/ai/prompt.md", "r", encoding="utf-8") as f:
     prompt = f.read()
 
+with open("todos/ai/adjust_prompt.md", "r", encoding="utf-8") as f:
+    adjust_prompt = f.read()
+
 user_todo = TodoRequest(title="최종 기획안 작성", due_date="2026-09-01", due_time=None)
 
 async def clean_json_string(raw_text: str) -> str:
@@ -46,6 +49,19 @@ async def divide_and_submit(user_todo: TodoRequest):
         input=user_todo.model_dump_json(),
     )
 
+    raw_text = response.output_text
+    cleaned_json = await clean_json_string(raw_text)
+    return json.loads(cleaned_json)
+
+async def adjust_subtask(subtasks: list[dict]):
+    client = genai.Client(api_key=os.getenv("GOOGLE_GEMINI_KEY"))
+    final_prompt = adjust_prompt.replace("{{CURRENT_DATE}}", str(datetime.datetime.now().date())).replace("{{CURRENT_TIME}}", str(datetime.datetime.now().time()))
+
+    response = await client.aio.interactions.create(
+        model="gemini-3.5-flash",
+        system_instruction=final_prompt,
+        input=json.dumps(subtasks),
+    )
     raw_text = response.output_text
     cleaned_json = await clean_json_string(raw_text)
     return json.loads(cleaned_json)
