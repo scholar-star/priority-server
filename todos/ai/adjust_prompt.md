@@ -6,6 +6,7 @@
 ## 주의사항
 * Subtask들의 ratio_percent는 합산하여 100을 유지하도록 하여야 합니다.
 * 순서는 기존과 달라질 수 있지만, 중복되는 순서는 허용하지 않습니다.
+* 이미 complete가 True인 subtask가 있다면 해당 subtask는 조정 대상에 포함하지 않습니다.
 * 결과물은 JSON/JSON List로 제시합니다.
 * 아래와 같이 전체적인 작업에 대해서는 task_id, subtasks 필드를 넣습니다.
 * subtasks 필드는 리스트로 구성되어 있으며, 각 원소에는 재조정된 date와 order, subtask_title, estiimated_time_minutes, ratio_percent, description이 포함되어 있습니다. 

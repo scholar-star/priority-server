@@ -2,6 +2,7 @@ from infra.priority_db import SubTask
 from sqlalchemy import select
 from exception.custom_exceptions import DBNotFoundException
 from todos.ai.divide_ai import adjust_subtask
+from sub_task_dto import SubTaskResponse
 
 class SubTaskService:
     async def sub_task_done(subtask_id: int, db):
@@ -46,5 +47,22 @@ class SubTaskService:
             db.add(new_subtask)
         await db.commit()
 
-        return {"message": "SubTask inserted and adjusted successfully.", "subtasks": adjusted_subtasks}
+        subtask_responses = []
+        for subtask_data in adjusted_subtasks:
+            if "date" in subtask_data and subtask_data["date"]:
+                subtask_data["date"] = subtask_data["date"].strftime("%Y-%m-%d")
+
+            subtask_responses.append(SubTaskResponse(
+                subtask_id=subtask_data.get("subtask_id"),
+                subtask_title=subtask_data["subtask_title"],
+                ratio=subtask_data["ratio"],
+                urgent=subtask_data["urgent"],
+                importance=subtask_data["importance"],
+                order=subtask_data["order"],
+                date=subtask_data.get("date"),
+                estimated_time=subtask_data.get("estimated_time"),
+                complete=False
+            ))
+            
+        return {"message": "SubTask inserted and adjusted successfully.", "subtasks": subtask_responses}
 
